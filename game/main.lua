@@ -5,7 +5,10 @@ Going to slap a licence on this at some stage.
 
 dofile("game/lib_sdlkey.lua")
 dofile("game/lib_draw.lua")
+dofile("game/lib_face.lua")
 
+mat_cam = M.new()
+M.translate(mat_cam, 0, 0, -1)
 mat_prj_big = M.new()
 mat_prj_small = M.new()
 do
@@ -29,7 +32,7 @@ function hook_tick(sec_current, sec_delta)
 	--
 end
 
-bl_star = D.polytrip(P.star(0, 0, 0.2, 0.1, 5), 0.03, 0.8, 0.8, 0, 1)
+ch_main = D.face {}
 function hook_render(sec_current, sec_delta)
 	--
 	M.load_projection(mat_prj_small)
@@ -37,8 +40,9 @@ function hook_render(sec_current, sec_delta)
 	GL.glClearColor(0, 0.5, 1, 1)
 	GL.glClear(GL.COLOR_BUFFER_BIT)
 
-	bl_star(1)
-	bl_star(2)
-	bl_star(3)
+	local stage 
+	for stage=1,3 do
+		ch_main.draw(mat_cam, stage)
+	end
 end
 

@@ -25,6 +25,21 @@ function P.ellipse(cx, cy, rx, ry, points)
 	return l
 end
 
+function P.poly(cx, cy, r, ang, points)
+	local a = ang
+	local ai = math.pi * 2 / points
+	local l = {}
+
+	local i
+	for i=1,points*2-1,2 do
+		l[i+0] = cx + r * math.sin(a)
+		l[i+1] = cy + r * math.cos(a)
+		a = a + ai
+	end
+
+	return l
+end
+
 function P.star(cx, cy, r1, r2, points)
 	points = points * 2
 	local a = 0
@@ -136,9 +151,18 @@ function D.polytrip(l, offs, r, g, b, a)
 		D.poly(P.inset(l, offs), r + li, g + li, b + li, a),
 	}
 
-	return function(pi, ...)
-		return plist[pi](...)
+	local ret
+	ret = function(pi, ...)
+		if pi == nil then
+			ret(1)
+			ret(2)
+			return ret(3)
+		else
+			return plist[pi](...)
+		end
 	end
+
+	return ret
 end
 
 
