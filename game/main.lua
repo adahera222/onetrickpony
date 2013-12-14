@@ -1,13 +1,47 @@
 --[[
-Copyright (C) 2013, Ben "GreaseMonkey" Russell.
-Going to slap a licence on this at some stage.
+One Trick Pony
+Copyright (C) 2013 Ben "GreaseMonkey" Russell
+
+This software is provided 'as-is', without any express or implied
+warranty.  In no event will the authors be held liable for any damages
+arising from the use of this software.
+
+Permission is granted to anyone to use this software for any purpose,
+including commercial applications, and to alter it and redistribute it
+freely, subject to the following restrictions:
+
+1. The origin of this software must not be misrepresented; you must not
+   claim that you wrote the original software. If you use this software
+   in a product, an acknowledgment in the product documentation would be
+   appreciated but is not required.
+2. Altered source versions must be plainly marked as such, and must not be
+   misrepresented as being the original software.
+3. This notice may not be removed or altered from any source distribution.
 ]]
+
+function string.split(s, c)
+	local l = {}
+
+	while true do
+		local t = s:find(c)
+		if not t then break end
+		l[#l+1] = s:sub(1,t-1)
+		s = s:sub(t+#c)
+	end
+
+	l[#l+1] = s
+
+	return l
+end
 
 dofile("game/lib_sdlkey.lua")
 dofile("game/lib_time.lua")
 dofile("game/lib_draw.lua")
+dofile("game/lib_font.lua")
 dofile("game/lib_face.lua")
+dofile("game/lib_pony.lua")
 
+mat_iden = M.new()
 mat_cam = M.new()
 M.translate(mat_cam, 0, 0, -1)
 mat_prj_big = M.new()
@@ -82,6 +116,17 @@ function hook_render(sec_current, sec_delta)
 	for stage=1,3 do
 		ch_main.draw(mat_cam, stage)
 	end
+
+	M.load_modelview(mat_iden)
+	local s = 
+[[No, you can't have a pony.
+You can only have one.
+And you already have that wooden pony there.]]
+	f_main.puts_shad(-1.0, 1.0, s, 2/50)
+
 	GL.glDisable(GL.STENCIL_TEST)
 end
+
+--print(string.split("butt", "t")[1])
+
 

@@ -4,5 +4,5 @@ Needed extra libraries:
 - GLEW (pretty much any version should do, I'm using 1.6.0)
 - ZLib (if you don't have this, you should probably get it)
 
-Not sure how to license this.
+The game code is ZLib-licensed (in game/).
 

@@ -47,7 +47,7 @@ int64_t get_time(void)
 // Set up SDL.
 int init_sdl(void)
 {
-	window = SDL_CreateWindow("(LD28 entry)",
+	window = SDL_CreateWindow("One Trick Pony (LD28 entry)",
 		SDL_WINDOWPOS_UNDEFINED,
 		SDL_WINDOWPOS_UNDEFINED,
 		sys_width,

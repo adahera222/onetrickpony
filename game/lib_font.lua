@@ -19,10 +19,53 @@ freely, subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 ]]
 
-function oneshot(d, sec_start)
-	return function(sec_current)
-		sec_start = sec_start or sec_current
-		return sec_current >= sec_start + d
+function font_new(fname)
+	local this = {
+		fname = fname,
+		img = png.load(fname),
+	}
+
+	do
+		local iw, ih = png.get_dims(this.img)
+		this.cw = iw/95
+		this.ch = ih
+		this.ratio = this.ch / this.cw
 	end
+
+	function this.puts(x, y, s, size, r, g, b, a)
+		r = r or 1
+		g = g or 1
+		b = b or 1
+		a = a or 1
+		local i
+		local bx = x
+		for i=1,#s do
+			if s:byte(i) == 10 then
+				x = bx
+				y = y - size * this.ratio
+			else
+				local c = (s:byte(i) - 32) / 95
+				png.render(this.img,
+					x, y - size * this.ratio, x + size, y,
+					c, 1, c + 0.95/95, 0,
+					r, g, b, a)
+				x = x + size
+			end
+		end
+	end
+
+	function this.puts_shad(x, y, s, size, r, g, b, a)
+		r = r or 1
+		g = g or 1
+		b = b or 1
+		a = a or 1
+		this.puts(x + size*0.25, y - size*0.25, s, size, 0, 0, 0, 0.5*a)
+		this.puts(x, y, s, size, r, g, b, a)
+	end
+	
+	return this
 end
+
+f_main = font_new("dat/font-dejavu-18.png")
+
 

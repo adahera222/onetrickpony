@@ -19,10 +19,4 @@ freely, subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 ]]
 
-function oneshot(d, sec_start)
-	return function(sec_current)
-		sec_start = sec_start or sec_current
-		return sec_current >= sec_start + d
-	end
-end
 
