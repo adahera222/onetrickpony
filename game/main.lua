@@ -37,12 +37,27 @@ function hook_render(sec_current, sec_delta)
 	--
 	M.load_projection(mat_prj_small)
 
+	local sw, sh = sys.get_screen_dims()
+	local mx, my = sys.get_mouse()
+	mx = (mx*2 - sw) / sh
+	my = (my*2 - sh) / sh
+	my = -my
+
+	ch_main.eye0.lx = mx*0.3
+	ch_main.eye0.ly = my*0.3
+	ch_main.eye1.lx = mx*0.3
+	ch_main.eye1.ly = my*0.3
+
+	GL.glEnable(GL.STENCIL_TEST)
 	GL.glClearColor(0, 0.5, 1, 1)
-	GL.glClear(GL.COLOR_BUFFER_BIT)
+	GL.glClear(GL.COLOR_BUFFER_BIT + GL.STENCIL_BUFFER_BIT)
+	GL.glStencilFunc(GL.ALWAYS, 0, 255)
+	GL.glStencilOp(GL.KEEP, GL.KEEP, GL.KEEP)
 
 	local stage 
 	for stage=1,3 do
 		ch_main.draw(mat_cam, stage)
 	end
+	GL.glDisable(GL.STENCIL_TEST)
 end
 
