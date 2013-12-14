@@ -42,8 +42,8 @@ dofile("game/lib_box.lua")
 dofile("game/lib_face.lua")
 dofile("game/lib_pony.lua")
 
-m_7th = mus.load("dat/7th.it")
-mus.play(m_7th)
+m_song1 = mus.load("dat/song1.it")
+mus.play(m_song1)
 
 mat_iden = M.new()
 mat_cam = M.new()

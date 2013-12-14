@@ -88,7 +88,7 @@ function P.roundrect(x1, y1, x2, y2, outs, points)
 		l[2*(i + points*3) + 1] = x1 - y
 		l[2*(i + points*3) + 2] = y1 + x
 	end
-	print(l[1],l[2],l[3],l[4],l[5],l[6])
+	--print(l[1],l[2],l[3],l[4],l[5],l[6])
 
 	return l
 end
