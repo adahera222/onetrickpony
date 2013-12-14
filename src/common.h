@@ -20,6 +20,11 @@ Boilerplate 28: GreaseMonkey's boilerplate code for Ludum Dare #28
 
 #include <sackit.h>
 
+#ifdef USE_JACK
+#include <jack/jack.h>
+#include <jack/ringbuffer.h>
+#endif
+
 #include "linmath.h"
 
 #ifdef WIN32

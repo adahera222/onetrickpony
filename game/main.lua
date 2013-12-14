@@ -38,8 +38,12 @@ dofile("game/lib_sdlkey.lua")
 dofile("game/lib_time.lua")
 dofile("game/lib_draw.lua")
 dofile("game/lib_font.lua")
+dofile("game/lib_box.lua")
 dofile("game/lib_face.lua")
 dofile("game/lib_pony.lua")
+
+m_7th = mus.load("dat/7th.it")
+mus.play(m_7th)
 
 mat_iden = M.new()
 mat_cam = M.new()
@@ -101,6 +105,14 @@ function hook_tick(sec_current, sec_delta)
 	ch_main.look(mx*0.3, my*0.3)
 end
 
+box_a = box_new {
+s = [[So if I beat you up,
+do I become the chief maid?]],
+	x = -0.8,
+	y = -0.5,
+}
+
+wpy = pony_wood_new {}
 ch_main = D.face {}
 function hook_render(sec_current, sec_delta)
 	--
@@ -113,16 +125,14 @@ function hook_render(sec_current, sec_delta)
 	GL.glStencilOp(GL.KEEP, GL.KEEP, GL.KEEP)
 
 	local stage 
-	for stage=1,3 do
+	for stage=1,2 do
+		M.identity(mat_cam)
 		ch_main.draw(mat_cam, stage)
+		wpy.draw(mat_cam, stage)
 	end
-
-	M.load_modelview(mat_iden)
-	local s = 
-[[No, you can't have a pony.
-You can only have one.
-And you already have that wooden pony there.]]
-	f_main.puts_shad(-1.0, 1.0, s, 2/50)
+	for stage=1,2 do
+		box_a.draw(mat_cam, stage)
+	end
 
 	GL.glDisable(GL.STENCIL_TEST)
 end

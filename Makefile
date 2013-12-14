@@ -26,13 +26,21 @@ OBJS = \
 	\
 	$(OBJDIR)/main.o
 
+ifdef USE_JACK
+CFLAGS_JACK=-DUSE_JACK `pkg-config --cflags jack`
+LIBS_JACK=`pkg-config --libs jack`
+else
+CFLAGS_JACK=
+LIBS_JACK=
+endif
+
 CFLAGS_SDL=`sdl2-config --cflags`
-CFLAGS = -g -O2 -Isrc/ -Isrc/sackit/ $(CFLAGS_SDL) -Wall -Wextra -Wno-unused-parameter
-LDFLAGS = -g
+CFLAGS = -g -O2 -Isrc/ -Isrc/sackit/ $(CFLAGS_SDL) $(CFLAGS_JACK) -Wall -Wextra -Wno-unused-parameter
 LIBS_SDL = `sdl2-config --libs`
 LIBS_Lua = -llua-5.1
 LIBS_GL = -lGL -lGLEW
-LIBS = -lm $(LIBS_SDL) $(LIBS_Lua) -lz $(LIBS_GL)
+LIBS = -lm $(LIBS_SDL) $(LIBS_Lua) -lz $(LIBS_GL) $(LIBS_JACK)
+LDFLAGS = -g
 
 BINNAME = ld28-gm
 

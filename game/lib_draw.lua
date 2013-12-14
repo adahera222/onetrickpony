@@ -73,6 +73,26 @@ function P.star(cx, cy, r1, r2, points)
 	return l
 end
 
+function P.roundrect(x1, y1, x2, y2, outs, points)
+	local l = {}
+	local i
+	for i=0,points-1 do
+		local a = (math.pi / 2) * (i/(points-1))
+		local x, y = math.sin(a)*outs, math.cos(a)*outs
+		l[2*(i + points*0) + 1] = x2 + x
+		l[2*(i + points*0) + 2] = y1 + y
+		l[2*(i + points*1) + 1] = x2 + y
+		l[2*(i + points*1) + 2] = y2 - x
+		l[2*(i + points*2) + 1] = x1 - x
+		l[2*(i + points*2) + 2] = y2 - y
+		l[2*(i + points*3) + 1] = x1 - y
+		l[2*(i + points*3) + 2] = y1 + x
+	end
+	print(l[1],l[2],l[3],l[4],l[5],l[6])
+
+	return l
+end
+
 function P.outset(sl, amt)
 	local l = {}
 
@@ -102,7 +122,11 @@ function P.outset(sl, amt)
 		local da = math.acos(dc) / 2 -- We are *bisecting* this angle.
 
 		-- Get direction + length
-		local dx, dy = norm(x - cx, y - cy)
+		local dcx, dcy = norm(x - cx, y - cy)
+		local dx, dy = norm(ax + bx, ay + by)
+		if dcx*dx + dcy*dy < 0 then
+			dx, dy = -dx, -dy
+		end
 		local d = amt / math.sin(da)
 
 		-- Add to our list
@@ -171,10 +195,12 @@ function D.polytrip(l, offs, r, g, b, a)
 	ret = function(pi, ...)
 		if pi == nil then
 			ret(1)
-			ret(2)
-			return ret(3)
-		else
-			return plist[pi](...)
+			return ret(2)
+		elseif pi == 1 then
+			return plist[1](...)
+		elseif pi == 2 then
+			plist[2](...)
+			return plist[3](...)
 		end
 	end
 

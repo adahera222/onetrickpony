@@ -14,6 +14,17 @@ it_module_t *mod_play = NULL;
 volatile int mod_luafree = 0;
 voice_t *voice_chain = NULL;
 
+#ifdef USE_JACK
+// Fuck you PulseAudio.
+jack_client_t *jclient = NULL;
+int16_t *jbuf = NULL;
+int jbuf_len = 0;
+float jbuf_offs = 0.0f;
+jack_port_t *spewer_1 = NULL;
+jack_port_t *spewer_2 = NULL;
+int jfreq = 0;
+#endif
+
 // SDL audio callback.
 
 SDL_AudioSpec wav_want, wav_have;
@@ -137,10 +148,45 @@ void cb_wav_update(void *userdata, Uint8 *stream, int len)
 	}
 }
 
+// JACK callback.
+#ifdef USE_JACK
+// Fuck you PulseAudio.
+int j_process(jack_nframes_t nframes, void *arg)
+{
+	// Get our output ports
+	jack_default_audio_sample_t *out0 = (jack_default_audio_sample_t *)jack_port_get_buffer(spewer_1, nframes);
+	jack_default_audio_sample_t *out1 = (jack_default_audio_sample_t *)jack_port_get_buffer(spewer_2, nframes);
+
+	float jdiff = 44100.0f / (float)jfreq;
+	int fi = 0;
+	while(fi < (int)nframes)
+	{
+		if(jbuf_offs >= jbuf_len)
+		{
+			cb_wav_update(NULL, (Uint8 *)jbuf, jbuf_len * sizeof(int16_t) * 2);
+			jbuf_offs -= jbuf_len;
+		}
+
+		int16_t v0 = jbuf[0 + 2*(int)jbuf_offs];
+		int16_t v1 = jbuf[1 + 2*(int)jbuf_offs];
+		float f0 = ((float)v0) * (1.0f / 32768.0f);
+		float f1 = ((float)v1) * (1.0f / 32768.0f);
+
+		out0[fi] = f0;
+		out1[fi] = f1;
+		jbuf_offs += jdiff;
+		fi++;
+	}
+
+	return 0;
+}
+#endif
+
 // Initialises the sound subsystem.
 int init_wav(void)
 {
 	// It's been a while since I've touched these.
+	// (multithreading things, not SDL's specific things)
 	mtx_play = SDL_CreateMutex();
 	mtx_sackit = SDL_CreateMutex();
 
@@ -153,6 +199,49 @@ int init_wav(void)
 	// we're using a lightweight build,
 	// and only building the stereo 2.14 filter nointerp mixer,
 	wav_want.channels = 2;
+
+#ifdef USE_JACK
+	// Fuck you PulseAudio.
+	jclient = jack_client_open("One Trick Pony", JackNoStartServer, NULL);
+	if(jclient == NULL)
+	{
+		eprintf("JACK not available, trying SDL audio\n");
+	} else {
+		jfreq = jack_get_sample_rate(jclient);
+		jbuf = malloc(sizeof(int16_t) * 2 * WAV_SAMPLES);
+		jbuf_offs = jbuf_len = WAV_SAMPLES;
+		jack_set_process_callback(jclient, j_process, NULL);
+		spewer_1 = jack_port_register(jclient, "out_1", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
+		spewer_2 = jack_port_register(jclient, "out_2", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
+		if(jack_activate(jclient))
+		{
+			eprintf("jack: can't activate client :(\n");
+		} else {
+			const char **ports;
+
+			ports = jack_get_ports(jclient, ".*:playback_.*", NULL, JackPortIsPhysical|JackPortIsInput);
+			if(ports == NULL)
+			{
+				eprintf("jack: can't find any physical inputs :(\n");
+			} else {
+				int i;
+				i = 0;
+				while(ports[i] != NULL)
+				{
+					printf("jack: Connecting to port \"%s\"\n", ports[i]);
+					if(jack_connect(jclient, jack_port_name(((i & 1) == 0 ? spewer_1 : spewer_2)), ports[i]))
+						eprintf("jack: can't connect port \"%s\" :(\n", ports[i]);
+					i++;
+				}
+
+				free(ports);
+
+				wav_have = wav_want;
+				return 0;
+			}
+		}
+	}
+#else
 	// check common.h for this setting. might make it a user setting somehow.
 #ifdef WIN32
 	// Fuck you Windows.
@@ -174,6 +263,7 @@ int init_wav(void)
 	}
 
 	SDL_PauseAudioDevice(wav_dev, 0);
+#endif
 
 	return 0;
 }

@@ -32,6 +32,23 @@ function font_new(fname)
 		this.ratio = this.ch / this.cw
 	end
 
+	function this.calc_size(s)
+		local i
+		local bx = 0
+		local x, y = 0, 1
+		for i=1,#s do
+			if s:byte(i) == 10 then
+				x = 0
+				y = y + 1
+			else
+				x = x + 1
+				bx = math.max(x, bx)
+			end
+		end
+
+		return bx, y
+	end
+
 	function this.puts(x, y, s, size, r, g, b, a)
 		r = r or 1
 		g = g or 1
@@ -62,7 +79,7 @@ function font_new(fname)
 		this.puts(x + size*0.25, y - size*0.25, s, size, 0, 0, 0, 0.5*a)
 		this.puts(x, y, s, size, r, g, b, a)
 	end
-	
+
 	return this
 end
 

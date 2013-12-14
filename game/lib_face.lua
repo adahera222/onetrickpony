@@ -63,7 +63,7 @@ function D.eye(settings)
 		else
 			this.ipoly(stage)
 		end
-		if stage == 3 then
+		if stage == 2 then
 			M.dup(lmat, gmat)
 			M.translate(lmat, this.x, this.y, 0)
 			M.translate(lmat, this.lx, this.ly, 0)
@@ -150,13 +150,11 @@ function D.face(settings)
 		M.load_modelview(lmat)
 
 		this.fpoly(stage)
-		if stage == 3 then
+		if stage == 2 then
 			this.eye0.draw(lmat, 1)
 			this.eye1.draw(lmat, 1)
 			this.eye0.draw(lmat, 2)
-			this.eye0.draw(lmat, 3)
 			this.eye1.draw(lmat, 2)
-			this.eye1.draw(lmat, 3)
 		end
 	end
 
