@@ -43,7 +43,7 @@ dofile("game/lib_face.lua")
 dofile("game/lib_pony.lua")
 
 m_song1 = mus.load("dat/song1.it")
-mus.play(m_song1)
+--mus.play(m_song1)
 
 mat_iden = M.new()
 mat_cam = M.new()
@@ -102,14 +102,15 @@ function hook_tick(sec_current, sec_delta)
 	my = -my
 
 	ch_main.tick(sec_current, sec_delta)
-	ch_main.look(mx*0.3, my*0.3)
+	ch_main.look(mx/0.3, my/0.3, -2)
 end
 
 box_a = box_new {
 s = [[So if I beat you up,
 do I become the chief maid?]],
 	x = -0.8,
-	y = -0.5,
+	y = -1.5,
+	scale = 2,
 }
 
 wpy = pony_wood_new {}
@@ -124,9 +125,11 @@ function hook_render(sec_current, sec_delta)
 	GL.glStencilFunc(GL.ALWAYS, 0, 255)
 	GL.glStencilOp(GL.KEEP, GL.KEEP, GL.KEEP)
 
+	M.identity(mat_cam)
+	M.scale(mat_cam, 0.3, 0.3, 1)
+
 	local stage 
 	for stage=1,2 do
-		M.identity(mat_cam)
 		ch_main.draw(mat_cam, stage)
 		wpy.draw(mat_cam, stage)
 	end

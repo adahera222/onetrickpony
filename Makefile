@@ -26,12 +26,12 @@ OBJS = \
 	\
 	$(OBJDIR)/main.o
 
-ifdef USE_JACK
-CFLAGS_JACK=-DUSE_JACK `pkg-config --cflags jack`
-LIBS_JACK=`pkg-config --libs jack`
-else
+ifdef NO_JACK
 CFLAGS_JACK=
 LIBS_JACK=
+else
+CFLAGS_JACK=-DUSE_JACK `pkg-config --cflags jack`
+LIBS_JACK=`pkg-config --libs jack`
 endif
 
 CFLAGS_SDL=`sdl2-config --cflags`

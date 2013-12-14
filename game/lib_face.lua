@@ -30,6 +30,7 @@ function D.eye(settings)
 		y = settings.y or 0,
 		lx = settings.lx or 0,
 		ly = settings.ly or 0,
+		lz = settings.lz or -1,
 		eye_side = settings.eye_side,
 		parent = settings.parent,
 		iris0 = D.poly(P.ellipse(0, 0, 0.23, 0.23, 15),
@@ -40,8 +41,9 @@ function D.eye(settings)
 			1.0, 1.0, 1.0, 1),
 	}
 
-	function this.look(x, y)
-		this.lx, this.ly = x, y
+	function this.look(x, y, z)
+		this.lx, this.ly = x - this.x, y - this.y
+		this.lz = z or this.lz
 	end
 
 	local lmat = M.new()
@@ -66,14 +68,15 @@ function D.eye(settings)
 		if stage == 2 then
 			M.dup(lmat, gmat)
 			M.translate(lmat, this.x, this.y, 0)
-			M.translate(lmat, this.lx, this.ly, 0)
+			local lx, ly, lz = norm(this.lx, this.ly, this.lz)
+			M.translate(lmat, lx*0.3, ly*0.3, 0)
 			M.load_modelview(lmat)
 			GL.glStencilFunc(GL.EQUAL, 1, 255)
 			this.iris0()
-			M.translate(lmat, this.lx*0.2, this.ly*0.2, 0)
+			M.translate(lmat, lx*0.2, ly*0.2, 0)
 			M.load_modelview(lmat)
 			this.pupil0()
-			M.translate(lmat, this.lx*0.2, this.ly*0.2, 0)
+			M.translate(lmat, lx*0.2, ly*0.2, 0)
 			M.load_modelview(lmat)
 			this.pupil1()
 			M.dup(lmat, gmat)
@@ -108,9 +111,9 @@ function D.face(settings)
 	this.eye0 = D.eye { x = -0.35, y =  0.15, parent = this, eye_side = -1, }
 	this.eye1 = D.eye { x =  0.35, y =  0.15, parent = this, eye_side =  1, }
 
-	function this.look(x, y)
-		this.eye0.look(x, y)
-		this.eye1.look(x, y)
+	function this.look(x, y, z)
+		this.eye0.look(x, y, z)
+		this.eye1.look(x, y, z)
 	end
 
 	function this.tick(sec_current, sec_delta)

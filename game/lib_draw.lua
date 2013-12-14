@@ -19,9 +19,10 @@ freely, subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 ]]
 
-function norm(x, y)
-	local d = math.sqrt(x*x + y*y)
-	return x/d, y/d
+function norm(x, y, z)
+	z = z or 0
+	local d = math.sqrt(x*x + y*y + z*z)
+	return x/d, y/d, z/d
 end
 
 -- polygon generators
