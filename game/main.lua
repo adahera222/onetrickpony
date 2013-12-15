@@ -19,10 +19,14 @@ freely, subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 ]]
 
-CAN_EDIT = true
+CAN_EDIT = false
 WORLD_FNAME = "dat/world_1.lua"
 
 edit_mode = CAN_EDIT
+
+story_alpha = 1.0
+story_show = true
+story_fade = nil
 
 function string.split(s, c)
 	local l = {}
@@ -105,6 +109,10 @@ function hook_key(sec_current, mod, key, state)
 	elseif state and edit_mode and world_types[key] then world_type_sel = key
 	elseif state and key == SDLK_F10 and CAN_EDIT then world_save()
 	end
+
+	if not story_fade then
+		story_fade = oneshot(1.0, sec_current)
+	end
 end
 
 function hook_click(sec_current, x, y, button, state)
@@ -157,6 +165,7 @@ function hook_tick(sec_current, sec_delta)
 	end
 
 	ch_main.tick(sec_current, sec_delta)
+	cam_main.follow_speed = (edit_mode and 10.0) or 4.0
 	cam_main.follow = ch_main
 	cam_main.tick(sec_current, sec_delta)
 
@@ -182,7 +191,7 @@ Stupid text box.]],
 }
 ]=]
 
-wpy = pony_wood_new {}
+--wpy = pony_wood_new {}
 cam_main = cam_new { x = 0, y = 0, zoom = 0.25 }
 ch_main = D.body {
 	r = 1, g = 0, b = 1,
@@ -202,7 +211,7 @@ function hook_render(sec_current, sec_delta)
 	local stage 
 	for stage=1,3 do
 		ch_main.draw(mat_cam, stage)
-		wpy.draw(mat_cam, stage)
+		--wpy.draw(mat_cam, stage)
 
 		local i
 		for i=1,#world_terrain do
@@ -222,7 +231,30 @@ function hook_render(sec_current, sec_delta)
 			wbl[i](stage)
 		end
 	end
-	
+
+	M.load_modelview(mat_iden)
+	if story_show then
+		f_main.puts_shad(-1, 1,
+[["Anything you want, dear."
+"I want a pony."
+"But you can only get one pony.
+  And you have that rocking horse over there."
+"THAT'S NOT A FUCKING PONY!"
+"Fine, be that way.
+  But you're not getting a pony."
+"FINE THEN, I'LL FIND ONE MYSELF!"
+
+And so your quest to find a pony begins.
+
+WASD to move, space to jump.
+]], 2/50, 1, 1, 1, story_alpha)
+		if story_fade then
+			story_alpha = story_alpha - sec_delta / 1.0
+			if story_fade(sec_current) then
+				story_show = false
+			end
+		end
+	end
 
 	GL.glDisable(GL.STENCIL_TEST)
 end

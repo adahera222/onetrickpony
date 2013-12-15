@@ -57,6 +57,18 @@ function box_new(settings)
 		end
 	end
 
+	function this.push_away(other)
+		return 0,1,0,0
+	end
+	function this.repr()
+		local s = "box_new{"
+		s = s .. "x=" .. this.x .. ","
+		s = s .. "y=" .. this.y .. ","
+		s = s .. "scale=" .. this.bscale .. ","
+		s = s .. "s=[==[" .. this.s .. "]==],"
+		s = s .. "}"
+		return s
+	end
 	function this.tick(sec_current, sec_delta)
 	end
 

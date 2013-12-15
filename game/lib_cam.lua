@@ -49,9 +49,23 @@ function cam_new(settings)
 
 	function this.tick(sec_current, sec_delta)
 		if this.follow then
+			local x, y = 0, 0
+			if not edit_mode then
+				local sw, sh = sys.get_screen_dims()
+				x, y = sys.get_mouse()
+				if x ~= -1 then
+					x = (x*2 - sw) / sh
+					y = (y*2 - sh) / sh
+					y = -y
+					local k = 3
+					x,y = x*k,y*k
+				else
+					x,y = 0,0
+				end
+			end
 			local k = 1 - math.exp(-this.follow_speed * sec_delta)
-			this.x = this.x + (this.follow.x - this.x) * k
-			this.y = this.y + (this.follow.y - this.y) * k
+			this.x = this.x + (x + this.follow.x - this.x) * k
+			this.y = this.y + (y + this.follow.y - this.y) * k
 		end
 	end
 

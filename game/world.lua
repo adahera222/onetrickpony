@@ -273,7 +273,6 @@ function W.dirt(l)
 	return this
 end
 
-
 function W.rock(l)
 	local this = W.base(l)
 	this.tname = "rock"
@@ -283,6 +282,61 @@ function W.rock(l)
 		0.4, 0.4, 0.4, 1)
 
 	function this.tick(sec_current, sec_delta)
+	end
+
+	return this
+end
+
+function W.platform(this, move_x, move_y, delay_move)
+	local offset = 0
+	local pwaiting = wait_player
+	local move_dir = 1
+	local move_offs = 0
+
+	local s_repr = this.repr
+	function this.repr()
+		local s = "W.platform("
+		s = s .. s_repr()
+		s = s .. "," .. move_x
+		s = s .. "," .. move_y
+		s = s .. "," .. delay_move
+		s = s .. ")"
+		return s
+	end
+
+	local s_tick = this.tick
+	function this.tick(sec_current, sec_delta)
+		move_offs = move_offs + move_dir * sec_delta / delay_move
+		while true do
+			if move_offs >= 1 then
+				move_offs = 2 - move_offs
+				move_dir = -1
+			elseif move_offs < 0 then
+				move_offs = -move_offs
+				move_dir = 1
+			else
+				break
+			end
+		end
+		return s_tick(sec_current, sec_delta)
+	end
+
+	local lmat = M.new()
+	local s_draw = this.draw
+	function this.draw(gmat, stage)
+		M.dup(lmat, gmat)
+		M.translate(lmat, move_offs * move_x, move_offs * move_y, 0)
+		return s_draw(lmat, stage)
+	end
+
+	local s_push_away = this.push_away
+	function this.push_away(other)
+		local bcx, bcy = this.cx, this.cy
+		this.cx = this.cx + move_offs * move_x
+		this.cy = this.cy + move_offs * move_y
+		r1,r2,r3,r4 = s_push_away(other)
+		this.cx, this.cy = bcx, bcy
+		return r1,r2,r3,r4
 	end
 
 	return this
