@@ -241,7 +241,7 @@ function hook_render(sec_current, sec_delta)
 "I want a pony."
 "But you can only get one pony.
   And you have that rocking horse over there."
-"THAT'S NOT A FUCKING PONY!"
+"THAT'S NOT A REAL PONY!"
 "Fine, be that way.
   But you're not getting a pony."
 "FINE THEN, I'LL FIND ONE MYSELF!"
