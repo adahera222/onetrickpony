@@ -5,4 +5,5 @@ make CC=i686-pc-mingw32-gcc OBJDIR=build/win32 BINNAME=ld28-gm.exe \
 	CFLAGS_SDL="-Iwinlibs -Iwinlibs/sdl2_inc -Dmain=SDL_main" \
 	LIBS_Lua="-llua" \
 	LIBS_GL="-lopengl32 ./glew32.dll" \
+	NO_JACK=1 \
 

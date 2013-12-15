@@ -74,6 +74,7 @@ function D.body(settings)
 		phys = settings.phys,
 		breath = 0,
 		breath_period = settings.breath_period or 3.0,
+		breath_amp = settings.breath_amp or 0.05,
 	}
 
 	this.chest = D.polytrip2(P.ellipse(0, 0, 0.4, 0.5, 20), 0.03,
@@ -96,7 +97,7 @@ function D.body(settings)
 		M.translate(lmat, this.x, this.y, 0)
 		M.load_modelview(lmat)
 
-		local boffs = math.sin(this.breath) * 0.1
+		local boffs = math.sin(this.breath) * this.breath_amp
 
 		M.scale(lmat, 1, 1 + boffs, 1)
 		M.translate(lmat, 0, boffs/2, 0)
