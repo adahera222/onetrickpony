@@ -37,6 +37,16 @@ function cam_new(settings)
 		return lmat
 	end
 
+	function this.w2s(x, y)
+		local sw, sh = sys.get_screen_dims()
+		x = (x*2 - sw) / sh
+		y = (y*2 - sh) / sh
+		y = -y
+		x = x/this.zoom + cam_main.x
+		y = y/this.zoom + cam_main.y
+		return x, y
+	end
+
 	function this.tick(sec_current, sec_delta)
 		if this.follow then
 			local k = 1 - math.exp(-this.follow_speed * sec_delta)

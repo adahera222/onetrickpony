@@ -219,3 +219,26 @@ function D.polytrip2(...)
 	end
 end
 
+function P.cutloop(sl)
+	-- This function exists solely to work around
+	-- what looks like a bug in the OpenGL implementation
+	-- I have to put up with.
+	local l = {}
+	local i
+	for i=1,#sl-2,2 do
+		l[#l+1] = sl[i+0]
+		l[#l+1] = sl[i+1]
+		l[#l+1] = sl[i+2]
+		l[#l+1] = sl[i+3]
+	end
+	local l2 = {}
+	l2[#l2+1] = sl[#sl-1]
+	l2[#l2+1] = sl[#sl-0]
+	l2[#l2+1] = sl[1]
+	l2[#l2+1] = sl[2]
+	l2[#l2+1] = sl[3]
+	l2[#l2+1] = sl[4]
+	return blob.new(GL.LINES, 2, l),
+		blob.new(GL.LINES, 2, l2)
+end
+

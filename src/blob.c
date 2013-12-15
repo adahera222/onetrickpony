@@ -60,6 +60,7 @@ int lf_blob_render(lua_State *L)
 	if(top < 4) return luaL_error(L, "not enough arguments for blob.render");
 
 	blob_t *bl = lua_touserdata(L, 1);
+	if(bl == NULL) return luaL_error(L, "couldn't load blob.render's userdata");
 	double r = lua_tonumber(L, 2);
 	double g = lua_tonumber(L, 3);
 	double b = lua_tonumber(L, 4);

@@ -44,6 +44,8 @@ dofile("game/lib_face.lua")
 dofile("game/lib_body.lua")
 dofile("game/lib_pony.lua")
 
+dofile("game/world.lua")
+
 m_song1 = mus.load("dat/song1.it")
 --mus.play(m_song1)
 
@@ -98,21 +100,71 @@ function hook_key(sec_current, mod, key, state)
 	]]
 end
 
+wpl = {}
+wbl = {}
+
 function hook_click(sec_current, x, y, button, state)
-	--
+	if not state then return end
+	x, y = cam_main.w2s(x, y)
+	wpl[#wpl+1] = {x = x, y = y}
+	if #wpl >= 3 then
+		wbl = {}
+		local l = W.convexify(wpl)
+		local i
+		print("Butt")
+		for i=1,#l do
+			local pl = {}
+			local j
+
+			for j=1,#l[i] do
+				pl[#pl+1] = l[i][j].x
+				pl[#pl+1] = l[i][j].y
+			end
+			print(i, #pl)
+
+			local bl = blob.new(GL.POLYGON, 2, P.inset(pl, 0.02))
+			wbl[#wbl + 1] = function ()
+				blob.render(bl, 1, 1, 1, 1)
+			end
+		end
+
+		do
+			local pl = {}
+			local j
+
+			for j=1,#wpl do
+				pl[#pl+1] = wpl[j].x
+				pl[#pl+1] = wpl[j].y
+			end
+			
+			-- I think my GPU drivers have a bug.
+			-- Enabling this results in extraneous red lines.
+			-- (I think the GPU assumes wireframe tri strip
+			--  rather than line loop.)
+			--[[
+			pl[#pl+1] = wpl[1].x
+			pl[#pl+1] = wpl[1].y
+			]]
+
+			--local bl = blob.new(GL.LINES, 2, P.cutloop(pl))
+			local bl = blob.new(GL.LINE_STRIP, 2, pl)
+			--local bl1, bl2 = P.cutloop(pl, 0.02)
+			--local bl = blob.new(GL.POLYGON, 2, pl)
+			wbl[#wbl+1] = function ()
+				blob.render(bl, 1, 0, 0, 1.0)
+				--blob.render(bl1, 1, 0, 0, 1)
+				--blob.render(bl2, 1, 0, 0, 1)
+			end
+		end
+		print("Final", #wpl, #wbl)
+	end
 end
 
 function hook_tick(sec_current, sec_delta)
-	local sw, sh = sys.get_screen_dims()
 	local mx, my = sys.get_mouse()
 
 	if mx ~= -1 then
-		mx = (mx*2 - sw) / sh
-		my = (my*2 - sh) / sh
-		my = -my
-		local zoom = cam_main.zoom
-		mx = mx/zoom + cam_main.x
-		my = my/zoom + cam_main.y
+		mx, my = cam_main.w2s(mx, my)
 		ch_main.look(mx, my, 3)
 	end
 
@@ -154,6 +206,12 @@ function hook_render(sec_current, sec_delta)
 	end
 	for stage=1,3 do
 		box_a.draw(mat_cam, stage)
+	end
+	
+	local i
+	M.load_modelview(mat_cam)
+	for i=1,#wbl do
+		wbl[i]()
 	end
 
 	GL.glDisable(GL.STENCIL_TEST)
