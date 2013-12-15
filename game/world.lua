@@ -145,7 +145,10 @@ function W.base(l)
 
 		local al = {}
 		for i=1,#l do
-			al[i] = math.atan2(l[i].y - cy, l[i].x - cx)
+			local y, x = l[i].y - cy, l[i].x - cx
+			local d = math.sqrt(x*x + y*y)
+			x, y = x/d, y/d
+			al[i] = {x=x, y=y, d=d}
 		end
 		this.angle_list = al
 	end
@@ -158,6 +161,62 @@ function W.base(l)
 		for i=1,#this.poly_list do
 			this.poly_list[i](stage)
 		end
+	end
+	
+	function this.push_away(other)
+		-- get direction
+		local pdx, pdy = other.x - this.cx, other.y - this.cy
+		pdy = pdy - other.radius
+		local pdist = math.sqrt(pdx*pdx + pdy*pdy)
+		pdx, pdy = pdx/pdist, pdy/pdist
+
+		-- find segment
+		local fx, fy, fo
+		local ax, ay, ao0, ao1
+		local dotf
+		local pi = 0
+		while pi < #this.angle_list do
+			local p0 = this.angle_list[(pi + 0) % #this.angle_list + 1]
+			local p1 = this.angle_list[(pi + 1) % #this.angle_list + 1]
+			local mdot = p0.x * p1.x + p0.y * p1.y - 0.0000001
+			local cdot0 = p0.x * pdx + p0.y * pdy
+			local cdot1 = p1.x * pdx + p1.y * pdy
+
+			-- calculate force direction + offset
+			fx, fy = norm(-(p1.y*p1.d-p0.y*p0.d),
+				(p1.x*p1.d-p0.x*p0.d))
+			dotf = fx*pdx + fy*pdy
+			fo = fx*p1.d*p1.x + fy*p1.d*p1.y
+
+			-- calculate "alternate" direction + limit
+			ax, ay = norm(
+				p1.x*p1.d-p0.x*p0.d,
+				p1.y*p1.d-p0.y*p0.d)
+			ao0 = ax*p0.d*p0.x + ay*p0.d*p0.y
+			ao1 = ax*p1.d*p1.x + ay*p1.d*p1.y
+			local ap = pdx*ax + pdy*ay
+			if ao0 > ao1 then
+				ao0, ao1 = ao1, ao0
+			end
+
+			if cdot0 >= mdot and cdot1 >= mdot then
+				break
+			end
+			pi = pi + 1
+		end
+		assert(pi < #this.angle_list)
+
+		pdx = pdx*pdist
+		pdy = pdy*pdist
+		pdist = pdx*fx + pdy*fy
+		--pdist = pdist - other.radius
+		if fo < pdist then return 0, 1, 0, 0 end
+
+		--local ap = pdx*ax + pdy*ay
+		--if ap < ao0 or ap > ao1 then return 0, 1, 0, 0 end
+
+		local fd = fo - pdist
+		return fx, fy, fd, 1
 	end
 
 	function this.tick(sec_current, sec_delta)

@@ -19,6 +19,8 @@ freely, subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 ]]
 
+edit_mode = true
+
 function string.split(s, c)
 	local l = {}
 
@@ -63,81 +65,59 @@ end
 
 function hook_key(sec_current, mod, key, state)
 	local tspd = (state and 7.0) or 0
-	ch_main.tvs = 3.0
+	ch_main.tvsx = 3.0
+	ch_main.tvsy = (edit_mode and 3.0) or 0
 	if key == SDLK_a then ch_main.tvx = -tspd
 	elseif key == SDLK_d then ch_main.tvx = tspd
-	elseif key == SDLK_w then ch_main.tvy = tspd
-	elseif key == SDLK_s then ch_main.tvy = -tspd
+	elseif key == SDLK_w and edit_mode then ch_main.tvy = tspd
+	elseif key == SDLK_s and edit_mode then ch_main.tvy = -tspd
+	elseif key == SDLK_e and state then edit_mode = not edit_mode
+	elseif key == SDLK_SPACE and state then ch_main.jump()
 	end
-	--[[
-	if state then
-		if key == SDLK_n then
-			ch_main.blink_target = 0.9
-			ch_main.eye_tilt_target = 0
-		elseif key == SDLK_g then
-			ch_main.blink_target = 1.5
-			ch_main.eye_tilt_target = 0
-		elseif key == SDLK_a then
-			ch_main.blink_target = 0.6
-			ch_main.eye_tilt_target = -0.3
-		elseif key == SDLK_h then
-			ch_main.blink_target = 0.9
-			ch_main.eye_tilt_target = 0.2
-		elseif key == SDLK_s then
-			ch_main.blink_target = 0.3
-			ch_main.eye_tilt_target = 0.1
-		elseif key == SDLK_c then
-			ch_main.blink_target = 0.2
-			ch_main.eye_tilt_target = -0.1
-		elseif key == SDLK_t then
-			ch_main.blink_target = 0.3
-			ch_main.eye_tilt_target = 0.03
-		elseif key == SDLK_p then
-			ch_main.blink_target = 0.6
-			ch_main.eye_tilt_target = 0.2
-		end
-	end
-	]]
 end
 
 wpl = {}
-wtl = {}
+world_terrain = {}
 wbl = {}
 
 function hook_click(sec_current, x, y, button, state)
-	if button == 1 and state then
-		x, y = cam_main.w2s(x, y)
-		wpl[#wpl+1] = {x = x, y = y}
-		if #wpl >= 1 then
+	if edit_mode then
+		if button == 1 and state then
+			x, y = cam_main.w2s(x, y)
+			wpl[#wpl+1] = {x = x, y = y}
+			if #wpl >= 1 then
+				wbl = {}
+				local pl = {}
+				local j
+
+				for j=1,#wpl do
+					pl[#pl+1] = wpl[j].x
+					pl[#pl+1] = wpl[j].y
+				end
+				
+				-- I think my GPU drivers have a bug.
+				-- Enabling this results in extraneous red lines.
+				-- (I think the GPU assumes wireframe tri strip
+				--  rather than line loop.)
+				--[[
+				pl[#pl+1] = wpl[1].x
+				pl[#pl+1] = wpl[1].y
+				]]
+
+				local bl = blob.new(GL.LINE_LOOP, 2, pl)
+				wbl[#wbl+1] = function ()
+					blob.render(bl, 1, 0, 0, 1.0)
+				end
+			end
+		elseif button == 3 and state then
+			if #wpl >= 3 then
+				world_terrain[#world_terrain+1] = W.meep(wpl)
+			end
+			wpl = {}
 			wbl = {}
-			local pl = {}
-			local j
-
-			for j=1,#wpl do
-				pl[#pl+1] = wpl[j].x
-				pl[#pl+1] = wpl[j].y
-			end
-			
-			-- I think my GPU drivers have a bug.
-			-- Enabling this results in extraneous red lines.
-			-- (I think the GPU assumes wireframe tri strip
-			--  rather than line loop.)
-			--[[
-			pl[#pl+1] = wpl[1].x
-			pl[#pl+1] = wpl[1].y
-			]]
-
-			local bl = blob.new(GL.LINE_LOOP, 2, pl)
-			wbl[#wbl+1] = function ()
-				blob.render(bl, 1, 0, 0, 1.0)
-			end
 		end
-	elseif button == 3 and state then
-		if #wpl >= 3 then
-			wtl[#wtl+1] = W.meep(wpl)
-		end
-		wpl = {}
-		wbl = {}
+	else
+		--
 	end
 end
 
@@ -157,8 +137,8 @@ function hook_tick(sec_current, sec_delta)
 	for i=1,#boxes do
 		boxes[i].tick(sec_current, sec_delta)
 	end
-	for i=1,#wtl do
-		wtl[i].tick(sec_current, sec_delta)
+	for i=1,#world_terrain do
+		world_terrain[i].tick(sec_current, sec_delta)
 	end
 end
 
@@ -198,8 +178,8 @@ function hook_render(sec_current, sec_delta)
 		wpy.draw(mat_cam, stage)
 
 		local i
-		for i=1,#wtl do
-			wtl[i].draw(mat_cam, stage)
+		for i=1,#world_terrain do
+			world_terrain[i].draw(mat_cam, stage)
 		end
 	end
 	for stage=1,3 do

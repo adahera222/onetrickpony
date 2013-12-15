@@ -75,6 +75,7 @@ function D.body(settings)
 	local this = {
 		x = settings.x or 0,
 		y = settings.y or 0,
+		radius = 0.8,
 		scale = settings.scale or 1,
 		r = settings.r or 0.5,
 		g = settings.g or 0.5,
@@ -84,7 +85,10 @@ function D.body(settings)
 		breath_period = settings.breath_period or 3.0,
 		breath_amp = settings.breath_amp or 0.05,
 		vx = 0, vy = 0,
-		tvx = 0, tvy = 0, tvs = 0,
+		tvx = 0, tvy = 0,
+		tvsx = 0, tvsy = 0,
+		can_jump = nil,
+		can_jump_x = 0, can_jump_y = 0,
 	}
 
 	this.chest = D.polytrip2(P.ellipse(0, 0, 0.4, 0.5, 20), 0.03,
@@ -107,6 +111,14 @@ function D.body(settings)
 		this.face.look(x, y, z)
 		this.hand0.look(x, y, z)
 		this.hand1.look(x, y, z)
+	end
+
+	function this.jump()
+		if this.can_jump then
+			this.vy = 5.0 * this.can_jump_y
+			this.vx = 5.0 * this.can_jump_x
+			this.can_jump = nil
+		end
 	end
 
 	local lmat = M.new()
@@ -136,13 +148,50 @@ function D.body(settings)
 		end
 	end
 
+	function this.collide_world(sec_current, sec_delta)
+		local i
+		local sdx, sdy = 0, 0
+		local svx, svy = 0, 0
+
+		for i = 1, #world_terrain do
+			local dx, dy, amt, dmul = world_terrain[i].push_away(this)
+			local dvx, dvy = norm(this.vx, this.vy)
+			sdx = sdx + dx * amt
+			sdy = sdy + dy * amt
+			local vdot = math.max(0, -(this.vx*sdx + this.vy*sdy))
+				/ math.sqrt(this.vx*this.vx + this.vy*this.vy)
+			if dmul*dy > 0.5 then
+				this.can_jump = oneshot(0.4, sec_current)
+				this.can_jump_x = dx
+				this.can_jump_y = dy
+			end
+			svx = svx + dmul * (-vdot*this.vx)
+			svy = svy + dmul * (-vdot*this.vy)
+		end
+
+		this.x = this.x + sdx
+		this.y = this.y + sdy
+		this.vx = this.vx + svx
+		this.vy = this.vy + svy
+	end
+
 	function this.tick(sec_current, sec_delta)
 		this.vx = this.vx + (this.tvx - this.vx)
-			* (1 - math.exp(-this.tvs*sec_delta))
+			* (1 - math.exp(-this.tvsx*sec_delta))
 		this.vy = this.vy + (this.tvy - this.vy)
-			* (1 - math.exp(-this.tvs*sec_delta))
+			* (1 - math.exp(-this.tvsy*sec_delta))
+		if not edit_mode then
+			this.vy = this.vy - 9.81 * sec_delta
+		end
+
+		if this.can_jump and this.can_jump(sec_current) then
+			this.can_jump = nil
+		end
 		this.x = this.x + this.vx * sec_delta
 		this.y = this.y + this.vy * sec_delta
+		if not edit_mode then
+			this.collide_world(sec_current, sec_delta)
+		end
 		this.breath = this.breath +
 			(1/this.breath_period) * math.pi * 2 * sec_delta
 		this.face.tick(sec_current, sec_delta)
