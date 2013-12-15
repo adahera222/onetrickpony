@@ -71,6 +71,9 @@ function D.body(settings)
 		r = settings.r or 0.5,
 		g = settings.g or 0.5,
 		b = settings.b or 0.5,
+		phys = settings.phys,
+		breath = 0,
+		breath_period = settings.breath_period or 3.0,
 	}
 
 	this.chest = D.polytrip2(P.ellipse(0, 0, 0.4, 0.5, 20), 0.03,
@@ -93,7 +96,15 @@ function D.body(settings)
 		M.translate(lmat, this.x, this.y, 0)
 		M.load_modelview(lmat)
 
+		local boffs = math.sin(this.breath) * 0.1
+
+		M.scale(lmat, 1, 1 + boffs, 1)
+		M.translate(lmat, 0, boffs/2, 0)
+		M.load_modelview(lmat)
 		this.chest(stage)
+		M.translate(lmat, 0, -boffs/2, 0)
+		M.scale(lmat, 1, 1 / (1 + boffs), 1)
+		this.face.y = 0.9 + boffs
 		if stage == 3 then
 			local i
 			for i=1,3 do
@@ -107,7 +118,13 @@ function D.body(settings)
 	end
 
 	function this.tick(sec_current, sec_delta)
+		this.breath = this.breath +
+			(1/this.breath_period) * math.pi * 2 * sec_delta
 		this.face.tick(sec_current, sec_delta)
+		this.hand0.tick(sec_current, sec_delta)
+		this.hand1.tick(sec_current, sec_delta)
+		this.boot0.tick(sec_current, sec_delta)
+		this.boot1.tick(sec_current, sec_delta)
 	end
 
 	return this

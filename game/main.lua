@@ -100,15 +100,13 @@ function hook_tick(sec_current, sec_delta)
 	local sw, sh = sys.get_screen_dims()
 	local mx, my = sys.get_mouse()
 
-	--[[
 	if mx ~= -1 then
 		mx = (mx*2 - sw) / sh
 		my = (my*2 - sh) / sh
 		my = -my
 		local zoom = cam_main.zoom
-		ch_main.look(mx/zoom, my/zoom, 3)
+		ch_main.face.look(mx/zoom, my/zoom - ch_main.y - ch_main.face.y, 3)
 	end
-	]]
 
 	ch_main.tick(sec_current, sec_delta)
 end
@@ -123,7 +121,7 @@ Stupid text box.]],
 }
 
 wpy = pony_wood_new {}
-cam_main = cam_new { x = 0, y = 0, zoom = 0.3 }
+cam_main = cam_new { x = 0, y = 0, zoom = 0.5 }
 ch_main = D.body {
 	r = 1, g = 0, b = 1,
 }
