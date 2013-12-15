@@ -99,6 +99,7 @@ function D.face(settings)
 	local this = {
 		x = settings.x or 0,
 		y = settings.y or 0,
+		parent = settings.parent,
 		eye_tilt = 0,
 		eye_tilt_target = 0.0,
 		blink_delay = settings.blink_delay or 3.0,
@@ -113,6 +114,8 @@ function D.face(settings)
 	this.eye1 = D.eye { x =  0.35, y =  0.15, parent = this, eye_side =  1, }
 
 	function this.look(x, y, z)
+		x = x - this.x - this.parent.x
+		y = y - this.y - this.parent.y
 		this.eye0.look(x, y, z)
 		this.eye1.look(x, y, z)
 	end

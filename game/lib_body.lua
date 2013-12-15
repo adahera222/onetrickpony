@@ -87,6 +87,7 @@ function D.body(settings)
 	this.boot1 = D.boot { x =  0.3, y = -0.6 }
 
 	this.face = D.face {
+		parent = this,
 		x = 0.0,
 		y = 0.9,
 		follow = settings.follow,

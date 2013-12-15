@@ -25,18 +25,24 @@ function cam_new(settings)
 		y = settings.y or 0,
 		zoom = settings.zoom or 1,
 		follow = settings.follow,
+		follow_speed = settings.follow_speed or 10.0,
 	}
 
 	local lmat = M.new()
 	function this.get_mat()
 		M.identity(lmat)
 		local zoom = this.zoom
-		M.translate(lmat, -this.x, -this.y, -1)
 		M.scale(lmat, zoom, zoom, 1)
+		M.translate(lmat, -this.x, -this.y, -1)
 		return lmat
 	end
 
 	function this.tick(sec_current, sec_delta)
+		if this.follow then
+			local k = 1 - math.exp(-this.follow_speed * sec_delta)
+			this.x = this.x + (this.follow.x - this.x) * k
+			this.y = this.y + (this.follow.y - this.y) * k
+		end
 	end
 
 	return this
