@@ -37,17 +37,17 @@ end
 dofile("game/lib_sdlkey.lua")
 dofile("game/lib_time.lua")
 dofile("game/lib_draw.lua")
+dofile("game/lib_cam.lua")
 dofile("game/lib_font.lua")
 dofile("game/lib_box.lua")
 dofile("game/lib_face.lua")
+dofile("game/lib_body.lua")
 dofile("game/lib_pony.lua")
 
 m_song1 = mus.load("dat/song1.it")
 --mus.play(m_song1)
 
 mat_iden = M.new()
-mat_cam = M.new()
-M.translate(mat_cam, 0, 0, -1)
 mat_prj_big = M.new()
 mat_prj_small = M.new()
 do
@@ -61,6 +61,7 @@ end
 
 function hook_key(sec_current, mod, key, state)
 	--
+	--[[
 	if state then
 		if key == SDLK_n then
 			ch_main.blink_target = 0.9
@@ -88,6 +89,7 @@ function hook_key(sec_current, mod, key, state)
 			ch_main.eye_tilt_target = 0.2
 		end
 	end
+	]]
 end
 
 function hook_click(sec_current, x, y, button, state)
@@ -97,24 +99,34 @@ end
 function hook_tick(sec_current, sec_delta)
 	local sw, sh = sys.get_screen_dims()
 	local mx, my = sys.get_mouse()
-	mx = (mx*2 - sw) / sh
-	my = (my*2 - sh) / sh
-	my = -my
+
+	--[[
+	if mx ~= -1 then
+		mx = (mx*2 - sw) / sh
+		my = (my*2 - sh) / sh
+		my = -my
+		local zoom = cam_main.zoom
+		ch_main.look(mx/zoom, my/zoom, 3)
+	end
+	]]
 
 	ch_main.tick(sec_current, sec_delta)
-	ch_main.look(mx/0.3, my/0.3, -2)
 end
 
 box_a = box_new {
-s = [[So if I beat you up,
-do I become the chief maid?]],
+s = [[This is a text box.
+Stupid text box.]],
 	x = -0.8,
-	y = -1.5,
-	scale = 2,
+	y = -1.2,
+	size = 2/20,
+	scale = 1,
 }
 
 wpy = pony_wood_new {}
-ch_main = D.face {}
+cam_main = cam_new { x = 0, y = 0, zoom = 0.3 }
+ch_main = D.body {
+	r = 1, g = 0, b = 1,
+}
 function hook_render(sec_current, sec_delta)
 	--
 	M.load_projection(mat_prj_small)
@@ -125,15 +137,14 @@ function hook_render(sec_current, sec_delta)
 	GL.glStencilFunc(GL.ALWAYS, 0, 255)
 	GL.glStencilOp(GL.KEEP, GL.KEEP, GL.KEEP)
 
-	M.identity(mat_cam)
-	M.scale(mat_cam, 0.3, 0.3, 1)
+	local mat_cam = cam_main.get_mat()
 
 	local stage 
-	for stage=1,2 do
+	for stage=1,3 do
 		ch_main.draw(mat_cam, stage)
 		wpy.draw(mat_cam, stage)
 	end
-	for stage=1,2 do
+	for stage=1,3 do
 		box_a.draw(mat_cam, stage)
 	end
 

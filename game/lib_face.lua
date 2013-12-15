@@ -52,31 +52,30 @@ function D.eye(settings)
 		M.translate(lmat, this.x, this.y, 0)
 		M.rotate(lmat, this.eye_side * -this.parent.eye_tilt, 0, 0, 1)
 		M.load_modelview(lmat)
-		this.ipoly = D.polytrip(P.eyesocket {
+		this.ipoly = D.polytrip2(P.eyesocket {
 				blink_level = this.parent.blink_level,
 			}, 0.03,
 			0.7, 0.7, 0.7, 1)
 
-		if stage == 2 then
+		if stage == 3 then
 			GL.glStencilFunc(GL.ALWAYS, 1, 255)
 			GL.glStencilOp(GL.KEEP, GL.KEEP, GL.REPLACE)
-			this.ipoly(2)
+			this.ipoly(3)
 			GL.glStencilOp(GL.KEEP, GL.KEEP, GL.KEEP)
-		else
-			this.ipoly(stage)
-		end
-		if stage == 2 then
+
 			M.dup(lmat, gmat)
 			M.translate(lmat, this.x, this.y, 0)
 			local lx, ly, lz = norm(this.lx, this.ly, this.lz)
+
 			M.translate(lmat, lx*0.3, ly*0.3, 0)
 			M.load_modelview(lmat)
+
 			GL.glStencilFunc(GL.EQUAL, 1, 255)
 			this.iris0()
-			M.translate(lmat, lx*0.2, ly*0.2, 0)
+			M.translate(lmat, lx*0.15, ly*0.15, 0)
 			M.load_modelview(lmat)
 			this.pupil0()
-			M.translate(lmat, lx*0.2, ly*0.2, 0)
+			M.translate(lmat, lx*0.15, ly*0.15, 0)
 			M.load_modelview(lmat)
 			this.pupil1()
 			M.dup(lmat, gmat)
@@ -85,9 +84,11 @@ function D.eye(settings)
 			M.load_modelview(lmat)
 			GL.glStencilFunc(GL.NEVER, 0, 255)
 			GL.glStencilOp(GL.REPLACE, GL.REPLACE, GL.REPLACE)
-			this.ipoly(2)
+			this.ipoly(3)
 			GL.glStencilFunc(GL.ALWAYS, 0, 255)
 			GL.glStencilOp(GL.KEEP, GL.KEEP, GL.KEEP)
+		else
+			this.ipoly(stage)
 		end
 	end
 
@@ -103,9 +104,9 @@ function D.face(settings)
 		blink_delay = settings.blink_delay or 3.0,
 		blink_next = nil,
 		blink_down = nil,
-		blink_level = 0.1,
+		blink_level = 0.04,
 		blink_target = 1.0,
-		fpoly = D.polytrip(P.ellipse(0, 0, 0.8, 0.7, 30), 0.03,
+		fpoly = D.polytrip3(P.ellipse(0, 0, 0.8, 0.7, 30), 0.03,
 			1.0, 0.8, 0, 1),
 	}
 	this.eye0 = D.eye { x = -0.35, y =  0.15, parent = this, eye_side = -1, }
@@ -134,7 +135,7 @@ function D.face(settings)
 		end
 
 		if this.blink_down then
-			this.blink_level = math.max(0.06, this.blink_level - sec_delta/0.08)
+			this.blink_level = math.max(0.04, this.blink_level - sec_delta/0.08)
 		else
 			this.blink_level = this.blink_level
 				+ (this.blink_target - this.blink_level)
@@ -153,11 +154,12 @@ function D.face(settings)
 		M.load_modelview(lmat)
 
 		this.fpoly(stage)
-		if stage == 2 then
-			this.eye0.draw(lmat, 1)
-			this.eye1.draw(lmat, 1)
-			this.eye0.draw(lmat, 2)
-			this.eye1.draw(lmat, 2)
+		if stage == 3 then
+			local i
+			for i=1,3 do
+				this.eye0.draw(lmat, i)
+				this.eye1.draw(lmat, i)
+			end
 		end
 	end
 

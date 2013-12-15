@@ -19,42 +19,20 @@ freely, subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 ]]
 
-function box_new(settings)
+function cam_new(settings)
 	local this = {
-		x = settings.x,
-		y = settings.y,
-		s = settings.s,
-		bscale = settings.scale or 1,
-		size = settings.size or 2/50,
-		scale = 1,
-		dead = false,
-		dead_timer = nil,
+		x = settings.x or 0,
+		y = settings.y or 0,
+		zoom = settings.zoom or 1,
 	}
 
-	do
-		local w, h = f_main.calc_size(this.s)
-		w = w + 3
-		h = h + 1
-		local bw, bh = this.size * w, this.size * h * f_main.ratio
-		local x, y = 0, 0
-		this.bl = D.polytrip2(
-			P.roundrect(x, y, x+bw, y-bh, this.size*0.9, 4),
-			0.03, 0, 0.2, 1, 1)
-	end
-
 	local lmat = M.new()
-	function this.draw(gmat, stage)
-		M.dup(lmat, gmat)
-		M.translate(lmat, this.x, this.y, 0)
-		local scale = this.scale * this.bscale
-		M.scale(lmat, scale, scale, 1)
-		M.load_modelview(lmat)
-		this.bl(stage)
-
-		if stage == 3 then
-			f_main.puts_shad(this.size*1.5, -this.size*f_main.ratio*0.5,
-				this.s, this.size)
-		end
+	function this.get_mat()
+		M.identity(lmat)
+		local zoom = this.zoom
+		M.translate(lmat, -this.x, -this.y, -1)
+		M.scale(lmat, zoom, zoom, 1)
+		return lmat
 	end
 
 	function this.tick(sec_current, sec_delta)
@@ -62,4 +40,5 @@ function box_new(settings)
 
 	return this
 end
+
 

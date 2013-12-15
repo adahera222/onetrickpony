@@ -64,7 +64,7 @@ function font_new(fname)
 				local c = (s:byte(i) - 32) / 95
 				png.render(this.img,
 					x, y - size * this.ratio, x + size, y,
-					c, 1, c + 0.95/95, 0,
+					c + 0.05/95, 1, c + 0.95/95, 0,
 					r, g, b, a)
 				x = x + size
 			end

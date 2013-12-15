@@ -178,7 +178,7 @@ function D.poly(sl, sr, sg, sb, sa)
 	end
 end
 
-function D.polytrip(l, offs, r, g, b, a)
+function D.polytrip3(l, offs, r, g, b, a)
 	local li = 0.3
 
 	r = r or 1
@@ -195,17 +195,27 @@ function D.polytrip(l, offs, r, g, b, a)
 	local ret
 	ret = function(pi, ...)
 		if pi == nil then
-			ret(1)
-			return ret(2)
-		elseif pi == 1 then
-			return plist[1](...)
-		elseif pi == 2 then
-			plist[2](...)
-			return plist[3](...)
+			ret(1, ...)
+			ret(2, ...)
+			return ret(3, ...)
+		else
+			return plist[pi](...)
 		end
 	end
 
 	return ret
 end
 
+function D.polytrip2(...)
+	local f = D.polytrip3(...)
+
+	return function(pi, ...)
+		if pi == 3 then
+			f(2, ...)
+			return f(3, ...)
+		elseif pi ~= 2 then
+			return f(pi, ...)
+		end
+	end
+end
 
