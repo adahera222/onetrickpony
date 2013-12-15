@@ -113,7 +113,7 @@ function hook_tick(sec_current, sec_delta)
 		local zoom = cam_main.zoom
 		mx = mx/zoom + cam_main.x
 		my = my/zoom + cam_main.y
-		ch_main.face.look(mx, my, 3)
+		ch_main.look(mx, my, 3)
 	end
 
 	ch_main.tick(sec_current, sec_delta)

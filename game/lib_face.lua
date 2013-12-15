@@ -21,7 +21,7 @@ freely, subject to the following restrictions:
 
 function P.eyesocket(settings)
 	-- TODO!
-	return P.ellipse(0, 0, 0.3, 0.3 * settings.blink_level, 15)
+	return P.ellipse(0, 0, 0.3, 0.3 * settings.blink_level, 25)
 end
 
 function D.eye(settings)
@@ -114,8 +114,8 @@ function D.face(settings)
 	this.eye1 = D.eye { x =  0.35, y =  0.15, parent = this, eye_side =  1, }
 
 	function this.look(x, y, z)
-		x = x - this.x - this.parent.x
-		y = y - this.y - this.parent.y
+		x = x - this.x
+		y = y - this.y
 		this.eye0.look(x, y, z)
 		this.eye1.look(x, y, z)
 	end

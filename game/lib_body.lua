@@ -25,14 +25,22 @@ function D.hand(settings)
 		y = settings.y or 0,
 		poly = D.polytrip2(P.ellipse(0, 0, 0.2, 0.2, 15), 0.03,
 			1.0, 0.8, 0, 1),
+		lx = 0, ly = 0, lz = 1,
 	}
 
 	local lmat = M.new()
 	function this.draw(gmat, stage)
 		M.dup(lmat, gmat)
 		M.translate(lmat, this.x, this.y, 0)
+		local lx, ly, lz = norm(this.lx, this.ly, this.lz)
+		M.translate(lmat, lx*0.4, ly*0.4, 0)
 		M.load_modelview(lmat)
 		this.poly(stage)
+	end
+
+	function this.look(x, y, z)
+		this.lx, this.ly = x - this.x, y - this.y
+		this.lz = z or this.lz
 	end
 
 	function this.tick(sec_current, sec_delta)
@@ -81,8 +89,8 @@ function D.body(settings)
 
 	this.chest = D.polytrip2(P.ellipse(0, 0, 0.4, 0.5, 20), 0.03,
 		this.r, this.g, this.b, 1)
-	this.hand0 = D.hand { x = -0.6, y = -0.1 }
-	this.hand1 = D.hand { x =  0.6, y = -0.1 }
+	this.hand0 = D.hand { x = -0.4, y = -0.1 }
+	this.hand1 = D.hand { x =  0.4, y = -0.1 }
 	this.boot0 = D.boot { x = -0.3, y = -0.6 }
 	this.boot1 = D.boot { x =  0.3, y = -0.6 }
 
@@ -93,6 +101,13 @@ function D.body(settings)
 		follow = settings.follow,
 		blink_delay = settings.blink_delay,
 	}
+
+	function this.look(x, y, z)
+		x, y = x - this.x, y - this.y
+		this.face.look(x, y, z)
+		this.hand0.look(x, y, z)
+		this.hand1.look(x, y, z)
+	end
 
 	local lmat = M.new()
 	function this.draw(gmat, stage)
