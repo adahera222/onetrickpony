@@ -55,6 +55,8 @@ dofile("game/lib_pony.lua")
 
 dofile("game/world.lua")
 
+w_jump = wav.load("dat/jump.wav")
+w_land = wav.load("dat/land.wav")
 m_song1 = mus.load("dat/song1.it")
 mus.play(m_song1)
 

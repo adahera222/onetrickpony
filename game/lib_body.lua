@@ -117,6 +117,7 @@ function D.body(settings)
 		if this.can_jump then
 			this.vy = 8.0 * this.can_jump_y
 			--this.vx = this.vx + 1.0 * this.can_jump_x
+			wav.play(w_jump)
 			this.can_jump = nil
 		end
 	end
@@ -161,6 +162,9 @@ function D.body(settings)
 			local vdot = math.max(0, -(this.vx*sdx + this.vy*sdy))
 				/ math.sqrt(this.vx*this.vx + this.vy*this.vy)
 			if dmul*dy > 0.5 then
+				if not this.can_jump then
+					wav.play(w_land)
+				end
 				this.can_jump = oneshot(0.4, sec_current)
 				this.can_jump_x = dx
 				this.can_jump_y = dy

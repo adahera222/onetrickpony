@@ -248,10 +248,34 @@ function W.grass(l)
 
 	this.poly_list[#this.poly_list + 1] = D.polytrip3(
 		this.point_blob, 0.03,
-		0, 1, 0, 1)
+		0, 0.4, 0, 1)
 	this.poly_list[#this.poly_list + 1] = D.polytrip3(
-		P.inset(this.point_blob, 0.5), 0.03,
+		P.inset(this.point_blob, 1.5), 0.03,
 		0.6, 0.3, 0.0, 1)
+	
+	local i
+	local dwait = 0.5*-math.log(math.random())
+	for i=1,#this.point_list do
+		local p0 = this.point_list[i]
+		local p1 = this.point_list[(i % #this.point_list)+1]
+		local bx, by = p0.x, p0.y
+		local dx, dy = p1.x-p0.x, p1.y-p0.y
+		local d = math.sqrt(dx*dx + dy*dy)
+		dx, dy = norm(dx, dy)
+
+		local din = 0
+		while din + dwait < d do
+			din = din + dwait
+			local px = bx + dx*din
+			local py = by + dy*din
+			local s = math.random()*0.3 + 0.2
+			this.poly_list[#this.poly_list + 1] = D.polytrip3(
+				P.ellipse(px, py, s, s, 12), 0.16,
+				0, 0.8, 0, 1)
+			dwait = 0.5*-math.log(math.random())
+		end
+		dwait = dwait - (d - din)
+	end
 
 	function this.tick(sec_current, sec_delta)
 	end
