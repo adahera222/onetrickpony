@@ -20,86 +20,161 @@ freely, subject to the following restrictions:
 ]]
 
 -- points go CLOCKWISE
-
-local function is_concave(x0, y0, x1, y1, x2, y2)
-	local xr = -(y2-y1)
-	local yr = (x2-x1)
-
-	return xr*(x1-x0) + yr*(y1-y0) < 0
+-- (but of course convexify gives no shits about this)
+local function dir_at(l, offs)
+	local i0 = (offs + 0) % #l + 1
+	local i1 = (offs + 1) % #l + 1
+	return l[i1].x - l[i0].x,
+		l[i1].y - l[i0].y
 end
 
-local function is_concave_at(l, offs)
-	local i0 = (offs - 1) % #l
-	local i2 = (offs + 1) % #l
-	local i1 = offs % #l
-
-	local p0 = l[i0 + 1]
-	local p1 = l[i1 + 1]
-	local p2 = l[i2 + 1]
-
-	return is_concave(
-		p0.x, p0.y,
-		p1.x, p1.y,
-		p2.x, p2.y)
+local function normal_at(l, offs)
+	local xr, yr = dir_at(l, offs)
+	xr, yr = -yr, xr
+	return xr, yr
 end
 
 W = {}
 
-function W.convexify(l, b)
+local function convexify_main(l, offs, b)
 	local i, offs
-
-	b = b or {}
 
 	-- screw this, i'm going to use 0-based indexing
 	offs = 0
-	-- find a concave point followed by a convex point
-	while offs < #l do
-		if is_concave_at(l, offs) and not is_concave_at(l, offs + 1) then
-			-- build up a list until we either:
-			-- 1. hit a concave point, or
-			-- 2. become concave again
-			local nl = {l[offs+1]}
-			local noffs = offs + 1
-			nl[#nl+1] = l[(noffs % #l) + 1]
-			noffs = noffs + 1
-			while true do
-				-- concave point
-				if is_concave_at(l, noffs) then break end
 
-				nl[#nl+1] = l[(noffs % #l) + 1]
+	-- get directions 
+	local dx0, dy0 = norm(dir_at(l, offs - 1))
+	local dx1, dy1 = norm(dir_at(l, offs))
+	dx1, dy1 = -dx1, -dy1
 
-				-- point becomes concave
-				if is_concave_at(nl, 0) then
-					nl[#nl] = nil
-					break
-				end
+	-- get cosine of angle between
+	local dot_wnd = dx0*dx1 + dy0*dy1
+	local dot_prog = 1
 
-				-- none of those happened? advance!
-				noffs = noffs + 1
+	-- build new list
+	local nl = {}
+	local o2 = offs
+	local pb = l[(offs % #l) + 1]
+	while true do
+		-- store point and advance
+		nl[#nl+1] = l[o2]
+		o2 = o2 + 1
+
+		-- if we've come full circle, just use our list
+		if o2 == offs + #l then
+			b[#b+1] = l
+			return b
+		end
+
+		-- get the actual point + offset from our base point
+		local p2 = l[(o2 % #l) + 1]
+		local px, py = norm(p2.x - pb.x, p2.y - pb.y)
+		local dot_d2 = px*dx0, py*dy0
+
+		-- angle got smaller OR angle exceeded max
+		if dot_d2 > dot_prog or dot_d2 <= dot_wnd then
+			if o2 - offs == 2 then
+				-- make sure we get at least a triangle
+				offs = offs - 1
+				nl[#nl+1] = l[(offs % #l) + 1]
+			end
+			b[#b+1] = nl
+
+			-- build second list
+			nl = {}
+			while o2 ~= offs + #l + 1 do
+				nl[#nl+1] = l[(o2 % #l) + 1]
+				o2 = o2 + 1
 			end
 
-			-- split it off
-			noffs = noffs - 1
-			local nl2 = {l[(noffs % #l)+1]}
-			while (noffs % #l) ~= (offs % #l) do
-				noffs = noffs + 1
-				nl2[#nl2+1] = l[(noffs % #l)]
-			end
-			noffs = noffs + 1
-			nl2[#nl2+1] = l[(noffs % #l)]
+			return convexify_main(nl, 0, b)
+		end
 
-			-- convexify the parts
-			print("ls", #nl, #nl2)
-			--b = {nl, nl2} return b
-			return W.convexify(nl2, W.convexify(nl, b))
-		else
-			offs = offs + 1
+		-- ensure monotoneness
+		dot_prog = dot_d2
+	end
+end
+
+function W.convexify_fails(l)
+	-- find a convex point
+	for i=0,#l-1 do
+		local nx, ny = normal_at(l, i-1)
+		local dx, dy = dir_at(l, i)
+		if nx*dx + ny*dy < 0 then
+			-- convex! let's roll.
+			return convexify_main(l, i, {})
+		end
+
+		-- otherwise, concave.
+	end
+
+	-- no convex points? return nothing.
+	return {}
+	--return {l}
+end
+
+function W.convexify(l)
+	-- Too much effort.
+	-- Just make sure everything is convex, mmkay?
+	return {l}
+end
+
+function W.base(l)
+	local this = {}
+
+	-- Calculate centre + point list
+	do
+		local cx, cy = 0, 0
+		local i
+		local pl = {}
+		local pb = {}
+
+		for i=1,#l do
+			cx = cx + l[i].x
+			cy = cy + l[i].y
+			pl[#pl+1] = {x = l[i].x, y = l[i].y}
+			pb[#pb+1] = l[i].x
+			pb[#pb+1] = l[i].y
+		end
+
+		cx, cy = cx/#l, cy/#l
+		this.cx = cx
+		this.cy = cy
+		this.point_blob = pb
+		this.point_list = pl
+
+		local al = {}
+		for i=1,#l do
+			al[i] = math.atan2(l[i].y - cy, l[i].x - cx)
+		end
+		this.angle_list = al
+	end
+
+	this.poly_list = {}
+	
+	function this.draw(gmat, stage)
+		local i
+		M.load_modelview(gmat)
+		for i=1,#this.poly_list do
+			this.poly_list[i](stage)
 		end
 	end
 
-	-- if the whole poly is concave, give up
-	-- if the whole poly is convex, there's nothing to do
-	b[#b+1] = l
-	return b
+	function this.tick(sec_current, sec_delta)
+	end
+
+	return this
 end
 
+function W.meep(l)
+	local this = W.base(l)
+
+	this.poly_list[#this.poly_list + 1] = D.polytrip3(
+		this.point_blob, 0.03,
+		0, 1, 0, 1)
+
+	function this.tick(sec_current, sec_delta)
+	end
+
+	return this
+end

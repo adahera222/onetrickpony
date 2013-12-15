@@ -220,9 +220,6 @@ function D.polytrip2(...)
 end
 
 function P.cutloop(sl)
-	-- This function exists solely to work around
-	-- what looks like a bug in the OpenGL implementation
-	-- I have to put up with.
 	local l = {}
 	local i
 	for i=1,#sl-2,2 do

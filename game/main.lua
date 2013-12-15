@@ -101,34 +101,15 @@ function hook_key(sec_current, mod, key, state)
 end
 
 wpl = {}
+wtl = {}
 wbl = {}
 
 function hook_click(sec_current, x, y, button, state)
-	if not state then return end
-	x, y = cam_main.w2s(x, y)
-	wpl[#wpl+1] = {x = x, y = y}
-	if #wpl >= 3 then
-		wbl = {}
-		local l = W.convexify(wpl)
-		local i
-		print("Butt")
-		for i=1,#l do
-			local pl = {}
-			local j
-
-			for j=1,#l[i] do
-				pl[#pl+1] = l[i][j].x
-				pl[#pl+1] = l[i][j].y
-			end
-			print(i, #pl)
-
-			local bl = blob.new(GL.POLYGON, 2, P.inset(pl, 0.02))
-			wbl[#wbl + 1] = function ()
-				blob.render(bl, 1, 1, 1, 1)
-			end
-		end
-
-		do
+	if button == 1 and state then
+		x, y = cam_main.w2s(x, y)
+		wpl[#wpl+1] = {x = x, y = y}
+		if #wpl >= 1 then
+			wbl = {}
 			local pl = {}
 			local j
 
@@ -146,17 +127,17 @@ function hook_click(sec_current, x, y, button, state)
 			pl[#pl+1] = wpl[1].y
 			]]
 
-			--local bl = blob.new(GL.LINES, 2, P.cutloop(pl))
-			local bl = blob.new(GL.LINE_STRIP, 2, pl)
-			--local bl1, bl2 = P.cutloop(pl, 0.02)
-			--local bl = blob.new(GL.POLYGON, 2, pl)
+			local bl = blob.new(GL.LINE_LOOP, 2, pl)
 			wbl[#wbl+1] = function ()
 				blob.render(bl, 1, 0, 0, 1.0)
-				--blob.render(bl1, 1, 0, 0, 1)
-				--blob.render(bl2, 1, 0, 0, 1)
 			end
 		end
-		print("Final", #wpl, #wbl)
+	elseif button == 3 and state then
+		if #wpl >= 3 then
+			wtl[#wtl+1] = W.meep(wpl)
+		end
+		wpl = {}
+		wbl = {}
 	end
 end
 
@@ -171,9 +152,20 @@ function hook_tick(sec_current, sec_delta)
 	ch_main.tick(sec_current, sec_delta)
 	cam_main.follow = ch_main
 	cam_main.tick(sec_current, sec_delta)
+
+	local i
+	for i=1,#boxes do
+		boxes[i].tick(sec_current, sec_delta)
+	end
+	for i=1,#wtl do
+		wtl[i].tick(sec_current, sec_delta)
+	end
 end
 
-box_a = box_new {
+boxes = {}
+
+--[=[
+boxes[#boxes+1] = box_new {
 s = [[This is a text box.
 Stupid text box.]],
 	x = -0.8,
@@ -181,9 +173,10 @@ Stupid text box.]],
 	size = 2/20,
 	scale = 1,
 }
+]=]
 
 wpy = pony_wood_new {}
-cam_main = cam_new { x = 0, y = 0, zoom = 0.5 }
+cam_main = cam_new { x = 0, y = 0, zoom = 0.25 }
 ch_main = D.body {
 	r = 1, g = 0, b = 1,
 }
@@ -203,16 +196,26 @@ function hook_render(sec_current, sec_delta)
 	for stage=1,3 do
 		ch_main.draw(mat_cam, stage)
 		wpy.draw(mat_cam, stage)
+
+		local i
+		for i=1,#wtl do
+			wtl[i].draw(mat_cam, stage)
+		end
 	end
 	for stage=1,3 do
-		box_a.draw(mat_cam, stage)
+		local i
+		for i=1,#boxes do
+			boxes[i].draw(mat_cam, stage)
+		end
+	end
+	for stage=1,3 do
+		local i
+		M.load_modelview(mat_cam)
+		for i=1,#wbl do
+			wbl[i](stage)
+		end
 	end
 	
-	local i
-	M.load_modelview(mat_cam)
-	for i=1,#wbl do
-		wbl[i]()
-	end
 
 	GL.glDisable(GL.STENCIL_TEST)
 end
