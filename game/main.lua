@@ -60,7 +60,13 @@ do
 end
 
 function hook_key(sec_current, mod, key, state)
-	--
+	local tspd = (state and 7.0) or 0
+	ch_main.tvs = 3.0
+	if key == SDLK_a then ch_main.tvx = -tspd
+	elseif key == SDLK_d then ch_main.tvx = tspd
+	elseif key == SDLK_w then ch_main.tvy = tspd
+	elseif key == SDLK_s then ch_main.tvy = -tspd
+	end
 	--[[
 	if state then
 		if key == SDLK_n then

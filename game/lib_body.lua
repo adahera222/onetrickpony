@@ -75,6 +75,8 @@ function D.body(settings)
 		breath = 0,
 		breath_period = settings.breath_period or 3.0,
 		breath_amp = settings.breath_amp or 0.05,
+		vx = 0, vy = 0,
+		tvx = 0, tvy = 0, tvs = 0,
 	}
 
 	this.chest = D.polytrip2(P.ellipse(0, 0, 0.4, 0.5, 20), 0.03,
@@ -119,6 +121,12 @@ function D.body(settings)
 	end
 
 	function this.tick(sec_current, sec_delta)
+		this.vx = this.vx + (this.tvx - this.vx)
+			* (1 - math.exp(-this.tvs*sec_delta))
+		this.vy = this.vy + (this.tvy - this.vy)
+			* (1 - math.exp(-this.tvs*sec_delta))
+		this.x = this.x + this.vx * sec_delta
+		this.y = this.y + this.vy * sec_delta
 		this.breath = this.breath +
 			(1/this.breath_period) * math.pi * 2 * sec_delta
 		this.face.tick(sec_current, sec_delta)

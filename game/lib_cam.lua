@@ -24,6 +24,7 @@ function cam_new(settings)
 		x = settings.x or 0,
 		y = settings.y or 0,
 		zoom = settings.zoom or 1,
+		follow = settings.follow,
 	}
 
 	local lmat = M.new()
