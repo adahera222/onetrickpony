@@ -171,7 +171,7 @@ function D.body(settings)
 
 		this.x = this.x + sdx
 		this.y = this.y + sdy
-		this.vx = this.vx + svx
+		--this.vx = this.vx + svx
 		this.vy = this.vy + svy
 	end
 
