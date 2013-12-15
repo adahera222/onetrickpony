@@ -154,6 +154,23 @@ function W.base(l)
 	end
 
 	this.poly_list = {}
+
+	function this.repr()
+		local s = "W." .. this.tname .. "("
+		local i
+		s = s .. "{"
+		for i=1,#this.point_list do
+			local p = this.point_list[i]
+			s = s .. "{"
+			s = s .. "x=" .. p.x .. ","
+			s = s .. "y=" .. p.y .. ","
+			s = s .. "}"
+			s = s .. ","
+		end
+		s = s .. "}"
+		s = s .. ")"
+		return s
+	end
 	
 	function this.draw(gmat, stage)
 		local i
@@ -225,15 +242,49 @@ function W.base(l)
 	return this
 end
 
-function W.meep(l)
+function W.grass(l)
 	local this = W.base(l)
+	this.tname = "grass"
 
 	this.poly_list[#this.poly_list + 1] = D.polytrip3(
 		this.point_blob, 0.03,
 		0, 1, 0, 1)
+	this.poly_list[#this.poly_list + 1] = D.polytrip3(
+		P.inset(this.point_blob, 0.5), 0.03,
+		0.6, 0.3, 0.0, 1)
 
 	function this.tick(sec_current, sec_delta)
 	end
 
 	return this
 end
+
+function W.dirt(l)
+	local this = W.base(l)
+	this.tname = "dirt"
+
+	this.poly_list[#this.poly_list + 1] = D.polytrip3(
+		this.point_blob, 0.03,
+		0.6, 0.3, 0, 1)
+
+	function this.tick(sec_current, sec_delta)
+	end
+
+	return this
+end
+
+
+function W.rock(l)
+	local this = W.base(l)
+	this.tname = "rock"
+
+	this.poly_list[#this.poly_list + 1] = D.polytrip3(
+		this.point_blob, 0.03,
+		0.4, 0.4, 0.4, 1)
+
+	function this.tick(sec_current, sec_delta)
+	end
+
+	return this
+end
+

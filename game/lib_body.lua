@@ -115,8 +115,8 @@ function D.body(settings)
 
 	function this.jump()
 		if this.can_jump then
-			this.vy = 5.0 * this.can_jump_y
-			this.vx = 5.0 * this.can_jump_x
+			this.vy = 8.0 * this.can_jump_y
+			--this.vx = this.vx + 1.0 * this.can_jump_x
 			this.can_jump = nil
 		end
 	end
@@ -181,7 +181,7 @@ function D.body(settings)
 		this.vy = this.vy + (this.tvy - this.vy)
 			* (1 - math.exp(-this.tvsy*sec_delta))
 		if not edit_mode then
-			this.vy = this.vy - 9.81 * sec_delta
+			this.vy = this.vy - 9.81 * 1.5 * sec_delta
 		end
 
 		if this.can_jump and this.can_jump(sec_current) then

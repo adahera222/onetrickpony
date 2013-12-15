@@ -288,7 +288,7 @@ end
 SDLK_UNKNOWN = 0
 
 SDLK_RETURN = (("\r"):byte())
-SDLK_ESCAPE = (("\033"):byte())
+SDLK_ESCAPE = (0x1B)
 SDLK_BACKSPACE = (("\b"):byte())
 SDLK_TAB = (("\t"):byte())
 SDLK_SPACE = ((" "):byte())

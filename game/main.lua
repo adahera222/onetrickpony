@@ -19,7 +19,10 @@ freely, subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 ]]
 
-edit_mode = true
+CAN_EDIT = true
+WORLD_FNAME = "dat/world_1.lua"
+
+edit_mode = CAN_EDIT
 
 function string.split(s, c)
 	local l = {}
@@ -49,7 +52,7 @@ dofile("game/lib_pony.lua")
 dofile("game/world.lua")
 
 m_song1 = mus.load("dat/song1.it")
---mus.play(m_song1)
+mus.play(m_song1)
 
 mat_iden = M.new()
 mat_prj_big = M.new()
@@ -63,6 +66,31 @@ do
 	end
 end
 
+world_types = {
+	[SDLK_1] = W.grass,
+	[SDLK_2] = W.dirt,
+	[SDLK_3] = W.rock,
+}
+world_type_sel = SDLK_1
+world_terrain = {}
+pcall(dofile, WORLD_FNAME)
+wbl = {}
+wpl = {}
+
+WORLD_FNAME_EDIT = "dat/world_1.lua"
+function world_save()
+	local fp = io.open(WORLD_FNAME_EDIT, "wb")
+	local i
+	fp:write("world_terrain = {\n")
+	for i=1,#world_terrain do
+		local t = world_terrain[i]
+		fp:write("\t" .. t.repr() .. ",\n")
+	end
+	fp:write("}\n")
+	fp:close()
+	print("WORLD SAVED")
+end
+
 function hook_key(sec_current, mod, key, state)
 	local tspd = (state and 7.0) or 0
 	ch_main.tvsx = 3.0
@@ -71,14 +99,13 @@ function hook_key(sec_current, mod, key, state)
 	elseif key == SDLK_d then ch_main.tvx = tspd
 	elseif key == SDLK_w and edit_mode then ch_main.tvy = tspd
 	elseif key == SDLK_s and edit_mode then ch_main.tvy = -tspd
-	elseif key == SDLK_e and state then edit_mode = not edit_mode
+	elseif key == SDLK_ESCAPE and state and edit_mode then wpl = {} wbl = {}
+	elseif key == SDLK_e and state and CAN_EDIT then edit_mode = not edit_mode
 	elseif key == SDLK_SPACE and state then ch_main.jump()
+	elseif state and edit_mode and world_types[key] then world_type_sel = key
+	elseif state and key == SDLK_F10 and CAN_EDIT then world_save()
 	end
 end
-
-wpl = {}
-world_terrain = {}
-wbl = {}
 
 function hook_click(sec_current, x, y, button, state)
 	if edit_mode then
@@ -111,7 +138,7 @@ function hook_click(sec_current, x, y, button, state)
 			end
 		elseif button == 3 and state then
 			if #wpl >= 3 then
-				world_terrain[#world_terrain+1] = W.meep(wpl)
+				world_terrain[#world_terrain+1] = world_types[world_type_sel](wpl)
 			end
 			wpl = {}
 			wbl = {}
