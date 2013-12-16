@@ -60,11 +60,19 @@ int init_sdl(void)
 	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 1); // go with whatever
 	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	context = SDL_GL_CreateContext(window);
-	
+
+	// Fuck you Windows.
+	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
 	// blatantly stolen from here: http://glew.sourceforge.net/basic.html
 	{
 		GLenum err = glewInit();
@@ -77,6 +85,18 @@ int init_sdl(void)
 
 		eprintf("Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
 	}
+
+	// Fuck you Windows.
+	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
+	int FUCKYOUWINDOWS = -1;
+	SDL_GL_GetAttribute(SDL_GL_STENCIL_SIZE, &FUCKYOUWINDOWS);
+	printf("stencil depth: %i\n", FUCKYOUWINDOWS);
 
 	return 0;
 }
